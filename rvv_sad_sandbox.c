@@ -1,11 +1,16 @@
 #include <stdlib.h>
 #include <time.h>
 #include <stdio.h>
+
+#if defined(__riscv)
 #include <riscv_vector.h>
+#endif
+
 #include <stdint.h>
 
 typedef uint8_t pixel;
 
+#if defined(__riscv)
 int pixel_sad_16x16_rvv_optimized(uint8_t *pix1, intptr_t stride1,
 uint8_t *pix2, intptr_t stride2)
 {
@@ -52,6 +57,7 @@ uint8_t *pix2, intptr_t stride2)
     v_sum = __riscv_vredsum_vs_u32m4_u32m1(v_acc, v_sum, vl_acc);
     return (int)__riscv_vmv_x_s_u32m1_u32(v_sum);
 }
+#endif
 
 #define PIXEL_SAD_C( name, lx, ly ) \
 static int name( pixel *pix1, intptr_t i_stride_pix1,  \
@@ -93,12 +99,17 @@ int main()
       }
 
     int sad_value = x264_pixel_sad_16x16(block1, stride, block2, stride);
+
+#if defined(__riscv)
     int optimized_sad_value = pixel_sad_16x16_rvv_optimized(block1, stride, block2, stride);
+#endif
 
     printf("SAD between block1 and block2: %d\n", sad_value);
-    printf("Optimized SAD between block1 and block2: %d\n", sad_value);
     printf("Average absolute difference per pixel: %.2f\n", sad_value / 256.0);
+#if defined(__riscv)
+    printf("Optimized SAD between block1 and block2: %d\n", sad_value);
     printf("Average absolute difference (for optimized SAD) per pixel: %.2f\n", optimized_sad_value / 256.0);
+#endif
 
     free(block1);
     free(block2);

@@ -7,3 +7,6 @@ TARGET = rvv_sad_sandbox
 
 all:
 	$(CC) $(CFLAGS) -o $(TARGET) $(SRC)
+
+x86:
+	$(CC) -O3 -Wall -o $(TARGET) $(SRC)
