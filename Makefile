@@ -1,7 +1,7 @@
 # Assumes the presence of a RISC-V environment with Vector
 
 CC = gcc
-CFLAGS = -march=rv64gcv -O3 -Wall -fno-tree-vectorize -fopt-info-vec-optimized
+CFLAGS = -march=rv64gcv -O3 -Wall -fno-tree-vectorize
 SRC = rvv_sad_sandbox.c sad_scalar.c sad_rvv.c
 TARGET = rvv_sad_sandbox
 
