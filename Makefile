@@ -2,7 +2,7 @@
 
 CC = gcc
 CFLAGS = -march=rv64gcv -O3 -Wall -fno-tree-vectorize -fopt-info-vec-optimized
-SRC = rvv_sad_sandbox.c
+SRC = rvv_sad_sandbox.c sad_scalar.c sad_rvv.c
 TARGET = rvv_sad_sandbox
 
 all:
@@ -12,4 +12,4 @@ x86:
 	$(CC) -O3 -Wall -o $(TARGET) $(SRC)
 
 asm:
-	$(CC) $(CFLAGS) -S -o $(TARGET).s $(SRC)
+	$(CC) $(CFLAGS) -S $(SRC)

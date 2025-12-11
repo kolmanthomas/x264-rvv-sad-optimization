@@ -13,8 +13,8 @@ int main()
     const int height = 16;
     const int stride = 16;
 
-    pixel *block1 = (pixel*)malloc(width * height * sizeof(pixel));
-    pixel *block2 = (pixel*)malloc(width * height * sizeof(pixel));
+    uint8_t *block1 = (uint8_t*)malloc(width * height * sizeof(uint8_t));
+    uint8_t *block2 = (uint8_t*)malloc(width * height * sizeof(uint8_t));
 
     for(int y = 0; y < height; y++)
       {
