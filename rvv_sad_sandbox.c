@@ -92,29 +92,29 @@ int main(int argc, char *argv[])
 
     // Display RVV and intrinsics support.
 #if defined(__riscv_v)
-    printf("RVV %u.%u.%u\n", __riscv_v / 1000000, __riscv_v % 1000000 / 1000, __riscv_v % 1000);
+    printf("RVV v%u.%u.%u\n", __riscv_v / 1000000, __riscv_v % 1000000 / 1000, __riscv_v % 1000);
 #else
     printf("RVV not supported\n");
 #endif
 
 #if defined(__riscv_v_intrinsic)
-    printf("RVV intrinsics support = %d\n", __riscv_v_intrinsic);
+    printf("RVV intrinsics v%u.%u.%u\n", __riscv_v_intrinsic / 1000000, __riscv_v_intrinsic % 1000000 / 1000, __riscv_v_intrinsic % 1000);
 #endif
 
-    const int width = 16;
     const int height = 16;
-    const int stride = 16;
+    const int stride1 = 16;
+    const int stride2 = 32;
 
-    uint8_t *block1 = (uint8_t*)malloc(width * height * sizeof(uint8_t));
-    uint8_t *block2 = (uint8_t*)malloc(width * height * sizeof(uint8_t));
+    uint8_t *block1 = (uint8_t*)malloc(stride1 * height * sizeof(uint8_t));
+    uint8_t *block2 = (uint8_t*)malloc(stride2 * height * sizeof(uint8_t));
 
-    randomize_block_16x16(block1, stride);
-    randomize_block_16x16(block2, stride);
+    randomize_block_16x16(block1, stride1);
+    randomize_block_16x16(block2, stride2);
     
-    int sad_value = pixel_sad_16x16_scalar(block1, stride, block2, stride);
+    int sad_value = pixel_sad_16x16_scalar(block1, stride1, block2, stride2);
         
 #if defined(__riscv) && defined(__riscv_v_intrinsic)
-    int optimized_sad_value = pixel_sad_16x16_rvv_optimized(block1, stride, block2, stride);
+    int optimized_sad_value = pixel_sad_16x16_rvv_optimized(block1, stride1, block2, stride2);
 
     if (sad_value != optimized_sad_value)
     {
