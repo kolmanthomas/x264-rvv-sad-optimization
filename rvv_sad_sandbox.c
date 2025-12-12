@@ -1,6 +1,13 @@
+#include <errno.h>
+#include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include <stdio.h>
+#include <unistd.h>
+#include <string.h>
+
+#include <asm/hwprobe.h>
+#include <asm/unistd.h>
 
 #include "sad_scalar.h"
 #include "sad_rvv.h"
@@ -17,8 +24,58 @@ void randomize_block_16x16(uint8_t *block, intptr_t i_stride_block)
     }
 }
 
+void probe_riscv()
+{
+	struct riscv_hwprobe requests[] = {{RISCV_HWPROBE_KEY_MVENDORID},
+					   {RISCV_HWPROBE_KEY_MARCHID},
+					   {RISCV_HWPROBE_KEY_MIMPID},
+					   {RISCV_HWPROBE_KEY_CPUPERF_0},
+					   {RISCV_HWPROBE_KEY_IMA_EXT_0}};
+
+	int ret = syscall(__NR_riscv_hwprobe, &requests,
+			  sizeof(requests) / sizeof(struct riscv_hwprobe), 0,
+			  NULL, 0);
+	if (ret) {
+		fprintf(stderr, "Syscall failed with %d: %s\n", ret,
+ 			strerror(errno));
+	}
+
+	bool has_misaligned_fast =
+	    (requests[3].value & RISCV_HWPROBE_MISALIGNED_FAST) ==
+	    RISCV_HWPROBE_MISALIGNED_FAST;
+	printf("Vendor ID: %llx\n", requests[0].value);
+	printf("MARCH ID: %llx\n", requests[1].value);
+	printf("MIMPL ID: %llx\n", requests[2].value);
+	printf("HasMisalignedFast: %s\n", has_misaligned_fast ? "yes" : "no");
+	__u64 extensions = requests[4].value;
+	printf("Extensions:\n");
+	if (extensions & RISCV_HWPROBE_IMA_FD)
+		printf("\tFD\n");
+	if (extensions & RISCV_HWPROBE_IMA_C)
+		printf("\tC\n");
+	if (extensions & RISCV_HWPROBE_IMA_V)
+		printf("\tV\n");
+	if (extensions & RISCV_HWPROBE_EXT_ZBA)
+		printf("\tZBA\n");
+	if (extensions & RISCV_HWPROBE_EXT_ZBB)
+		printf("\tZBB\n");
+	if (extensions & RISCV_HWPROBE_EXT_ZBS)
+		printf("\tZBS\n");
+
+    #ifdef __riscv_vector
+        printf("RISC-V Vector extension supported (version %ld)\n", __riscv_vector);
+        #if __riscv_vector >= 1000000
+            printf("Vector 1.0 or later supported\n");
+        #endif
+    #else
+        printf("RISC-V Vector extension not supported\n");
+    #endif
+}
+
 int main(int argc, char *argv[])
 {
+    probe_riscv();
+
     // Optionally receive seed and iteration count from args.
     long rng_seed;
     if (argc > 1)
