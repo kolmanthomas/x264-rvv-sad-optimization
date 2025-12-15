@@ -11,6 +11,7 @@
 
 #include "sad_scalar.h"
 #include "sad_rvv.h"
+#include "sad_autovec.h"
 
 void randomize_block_16x16(uint8_t *block, intptr_t i_stride_block)
 {
@@ -90,6 +91,13 @@ int main(int argc, char *argv[])
     printf("RNG seed is %ld\n", rng_seed);
     srand(rng_seed);
 
+    // Optionally receive number of times to repeat from args.
+    long n = 1;
+    if (argc > 2)
+    {
+        n = strtol(argv[2], NULL, 10);
+    }
+
     // Display RVV and intrinsics support.
 #if defined(__riscv_v)
     printf("RVV v%u.%u.%u\n", __riscv_v / 1000000, __riscv_v % 1000000 / 1000, __riscv_v % 1000);
@@ -108,19 +116,24 @@ int main(int argc, char *argv[])
     uint8_t *block1 = (uint8_t*)malloc(stride1 * height * sizeof(uint8_t));
     uint8_t *block2 = (uint8_t*)malloc(stride2 * height * sizeof(uint8_t));
 
-    randomize_block_16x16(block1, stride1);
-    randomize_block_16x16(block2, stride2);
-    
-    int sad_value = pixel_sad_16x16_scalar(block1, stride1, block2, stride2);
-        
-#if defined(__riscv) && defined(__riscv_v_intrinsic)
-    int optimized_sad_value = pixel_sad_16x16_rvv_optimized(block1, stride1, block2, stride2);
-
-    if (sad_value != optimized_sad_value)
+    for (int i = 0; i < n; i++)
     {
-        printf("Different SAD results: scalar = %d, rvv = %d\n", sad_value, optimized_sad_value);
+        randomize_block_16x16(block1, stride1);
+        randomize_block_16x16(block2, stride2);
+        
+        int sad_value = pixel_sad_16x16_scalar(block1, stride1, block2, stride2);
+
+    #if defined(__riscv) && defined(__riscv_v_intrinsic)
+        int optimized_sad_value = pixel_sad_16x16_rvv_optimized(block1, stride1, block2, stride2);
+        int autovec_sad_result = pixel_sad_16x16_autovec(block1, stride1, block2, stride2);
+
+        if (sad_value != optimized_sad_value || sad_value != autovec_sad_result)
+        {
+            printf("Different SAD results: scalar = %d, rvv = %d, autovec = %d\n", sad_value, optimized_sad_value, autovec_sad_result);
+            break;
+        }
+    #endif
     }
-#endif
 
     free(block1);
     free(block2);
