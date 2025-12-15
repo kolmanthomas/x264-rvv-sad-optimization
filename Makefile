@@ -5,6 +5,8 @@ CFLAGS = -march=rv64gcv -O3 -Wall -fno-tree-vectorize
 SRC = rvv_sad_sandbox.c sad_scalar.c sad_rvv.c
 TARGET = rvv_sad_sandbox
 
+.PHONY: clean all
+
 all:
 	$(CC) $(CFLAGS) -o $(TARGET) $(SRC)
 
@@ -13,3 +15,6 @@ x86:
 
 asm:
 	$(CC) $(CFLAGS) -S $(SRC)
+
+clean:
+	rm -f $(TARGET)
