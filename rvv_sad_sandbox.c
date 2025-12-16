@@ -123,7 +123,7 @@ int main(int argc, char *argv[])
         
         int sad_value = pixel_sad_16x16_scalar(block1, stride1, block2, stride2);
 
-    #if defined(__riscv) && defined(__riscv_v_intrinsic)
+    #if defined(__riscv_vector)
         int optimized_sad_value = pixel_sad_16x16_rvv_optimized(block1, stride1, block2, stride2);
         int autovec_sad_result = pixel_sad_16x16_autovec(block1, stride1, block2, stride2);
 

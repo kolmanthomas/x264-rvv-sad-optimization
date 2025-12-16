@@ -1,6 +1,6 @@
 #include "sad_rvv.h"
 
-#if defined(__riscv)
+#if defined(__riscv_vector)
 
 int pixel_sad_16x16_rvv_optimized(uint8_t *pix1, intptr_t stride1,
                                                 uint8_t *pix2, intptr_t stride2)
@@ -49,4 +49,4 @@ int pixel_sad_16x16_rvv_optimized(uint8_t *pix1, intptr_t stride1,
     return (int)__riscv_vmv_x_s_u32m1_u32(v_sum);
 }
 
-#endif // defined(__riscv)
+#endif // defined(__riscv_vector)
